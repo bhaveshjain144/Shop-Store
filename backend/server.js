@@ -4,34 +4,47 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const userRoute = require("./routes/userRoute");
-const errorHandler = require("./middleware/errorMiddleware")
-const app = express()
+const productRoute = require("./routes/productRoute");
+const contactRoute = require("./routes/contactRoute");
+const errorHandler = require("./middleWare/errorMiddleware");
+const cookieParser = require("cookie-parser");
+const path = require("path");
 
+const app = express();
 
 // Middlewares
-app.use(express.json())
-app.use(express.urlencoded({extended: false}))      // handle data comes via url
-app.use(bodyParser.json())     // body parser helps pass the information/data from frontend to backend by converting it into an object
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    credentials: true,
+  })
+);
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes Middleware
-app.use("/api/users", userRoute)
-
+app.use("/api/users", userRoute);
+app.use("/api/products", productRoute);
+app.use("/api/contactus", contactRoute);
 
 // Routes
 app.get("/", (req, res) => {
-    res.send("Home Page");
-})
+  res.send("Home Page");
+});
 
-//Error Middleware
+// Error Middleware
 app.use(errorHandler);
-
-// connect to mongodb
+// Connect to DB and start server
 const PORT = process.env.PORT || 5000;
-mongoose.connect(process.env.MONGO_URI).then(() => {
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
     app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`)
-        console.log("Database connected successfully")
-    })
-})
-.catch((err) => console.log(err))
+      console.log(`Server Running on port ${PORT}`);
+    });
+  })
+  .catch((err) => console.log(err));
